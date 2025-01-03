@@ -5,40 +5,51 @@ import Friends from "./Friends";
 import RightSide from "./RightSide";
 import { useDispatch, useSelector } from 'react-redux';
 import { getFriends, messageSend, getMessages, ImageMessageSend } from '../store/actions/messengerAction';
+import toast, { Toaster } from 'react-hot-toast';
+import useSound from 'use-sound';
+import notificationSound from '../audio/notification.mp3';
+import sendingSound from '../audio/sending.mp3';
 import { io } from 'socket.io-client';
 
 const Messenger = () => {
     const scrollRef = useRef();
     const socket = useRef();
+    const [notificationPlay] = useSound(notificationSound);   
+    const [sendingPlay] = useSound(sendingSound); 
     const { myInfo } = useSelector(state => state.auth);
     const { friends, message } = useSelector(state => state.messenger);
     const [currentfriend, setCurrentFriend] = useState('');
     const [newMessage, setNewMessage] = useState('');
     const [activeUser, setActiveUser] = useState([]);
     const [socketMessage, setSocketMessage] = useState('');
+    const [typingMessage, setTypingMessage] = useState('');
 
     // console.log(currentfriend);
 
     useEffect(() => {
         socket.current = io('ws://localhost:8000');
-        socket.current.on('getMessage',(data) => {
+        socket.current.on('getMessage', (data) => {
             setSocketMessage(data);
+        })
+
+        socket.current.on('typingMessageGet', (data) => {
+            setTypingMessage(data);
         })
     }, []);
 
     useEffect(() => {
-        if(socketMessage && currentfriend){
-             if(socketMessage.senderId === currentfriend._id && socketMessage.receiverId === myInfo.id){
-                  dispatch({
-                       type: 'SOCKET_MESSAGE',
-                       payload : {
-                            message: socketMessage
-                       }
-                  })
-             }
+        if (socketMessage && currentfriend) {
+            if (socketMessage.senderId === currentfriend._id && socketMessage.receiverId === myInfo.id) {
+                dispatch({
+                    type: 'SOCKET_MESSAGE',
+                    payload: {
+                        message: socketMessage
+                    }
+                })
+            }
         }
         setSocketMessage('')
-     },[socketMessage]);
+    }, [socketMessage]);
 
     useEffect(() => {
         socket.current.emit('addUser', myInfo.id, myInfo)
@@ -51,28 +62,47 @@ const Messenger = () => {
         })
     }, []);
 
+    useEffect(() => {
+        if (socketMessage && socketMessage.senderId !== currentfriend._id && socketMessage.receiverId === myInfo.id) {
+            notificationPlay();
+            toast.success(`${socketMessage.senderName} sent you a new message`)
+        }
+    }, [socketMessage]);
+
     const inputHandle = (e) => {
         setNewMessage(e.target.value);
+        socket.current.emit('typingMessage', {
+            senderId: myInfo.id,
+            receiverId: currentfriend._id,
+            msg: e.target.value
+        })
     }
 
     const sendMessage = (e) => {
         e.preventDefault();
+        sendingPlay();
         const data = {
             senderName: myInfo.username,
             receiverId: currentfriend._id,
             message: newMessage ? newMessage : '❤'
         }
 
-        socket.current.emit('sendMessage',{
+        socket.current.emit('sendMessage', {
             senderId: myInfo.id,
             senderName: myInfo.username,
             receiverId: currentfriend._id,
             time: new Date(),
-            message : {
-                 text : newMessage ? newMessage : '❤',
-                 image : ''
+            message: {
+                text: newMessage ? newMessage : '❤',
+                image: ''
             }
-       })
+        })
+
+        socket.current.emit('typingMessage', {
+            senderId: myInfo.id,
+            receiverId: currentfriend._id,
+            msg: ''
+        })
 
         dispatch(messageSend(data));
         setNewMessage('')
@@ -98,13 +128,29 @@ const Messenger = () => {
 
     const emojiSend = (emu) => {
         setNewMessage(`${newMessage}` + emu);
+        socket.current.emit('typingMessage', {
+            senderId: myInfo.id,
+            receiverId: currentfriend._id,
+            msg: emu
+        })
     }
 
     const ImageSend = (e) => {
-        console.log(e.target.files[0])
         if (e.target.files.length !== 0) {
+            sendingPlay();
             const imagename = e.target.files[0].name;
             const newImageName = Date.now() + imagename;
+
+            socket.current.emit('sendMessage', {
+                senderId: myInfo.id,
+                senderName: myInfo.username,
+                receiverId: currentfriend._id,
+                time: new Date(),
+                message: {
+                    text: '',
+                    image: newImageName
+                }
+            })
 
             const formData = new FormData();
 
@@ -119,6 +165,16 @@ const Messenger = () => {
 
     return (
         <div className="messenger">
+            <Toaster
+                position={'top-right'}
+                reverseOrder={false}
+                toastOptions={{
+                    style: {
+                        fontSize: '18px'
+                    }
+                }}
+
+            />
             <div className="row">
                 <div className="col-3">
                     <div className="left-side">
@@ -148,7 +204,7 @@ const Messenger = () => {
                         </div>
                         <div className='active-friends'>
                             {
-                                activeUser && activeUser.length > 0 ? activeUser.map(u =>  <ActiveFriend setCurrentFriend = {setCurrentFriend} user={u} />) : ''  
+                                activeUser && activeUser.length > 0 ? activeUser.map(u => <ActiveFriend setCurrentFriend={setCurrentFriend} user={u} />) : ''
                             }
                         </div>
                         <div className='friends'>
@@ -171,7 +227,8 @@ const Messenger = () => {
                         scrollRef={scrollRef}
                         emojiSend={emojiSend}
                         ImageSend={ImageSend}
-                        activeUser = {activeUser}
+                        activeUser={activeUser}
+                        typingMessage={typingMessage}
                     /> : 'Please Select your Friend'
                 }
             </div>

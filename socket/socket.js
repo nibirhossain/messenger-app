@@ -47,6 +47,19 @@ io.on('connection', (socket) => {
        }
     });
 
+    socket.on('typingMessage',(data)=>{
+        const user = findFriend(data.receiverId);
+        if(user !== undefined){
+             socket.to(user.socketId).emit('typingMessageGet',{
+                  senderId : data.senderId,                   
+                  receiverId :  data.receiverId,
+                  msg : data.msg                    
+                   
+             })
+        }
+        console.log('typing user', user)
+   })
+
     socket.on('disconnect', () => {
         console.log('user is disconnect... ');
         removeUser(socket.id);
