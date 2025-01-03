@@ -15,11 +15,30 @@ const Messenger = () => {
     const [currentfriend, setCurrentFriend] = useState('');
     const [newMessage, setNewMessage] = useState('');
     const [activeUser, setActiveUser] = useState([]);
+    const [socketMessage, setSocketMessage] = useState('');
+
     // console.log(currentfriend);
 
     useEffect(() => {
-        socket.current = io('ws://localhost:8000')
+        socket.current = io('ws://localhost:8000');
+        socket.current.on('getMessage',(data) => {
+            setSocketMessage(data);
+        })
     }, []);
+
+    useEffect(() => {
+        if(socketMessage && currentfriend){
+             if(socketMessage.senderId === currentfriend._id && socketMessage.receiverId === myInfo.id){
+                  dispatch({
+                       type: 'SOCKET_MESSAGE',
+                       payload : {
+                            message: socketMessage
+                       }
+                  })
+             }
+        }
+        setSocketMessage('')
+     },[socketMessage]);
 
     useEffect(() => {
         socket.current.emit('addUser', myInfo.id, myInfo)
@@ -43,8 +62,20 @@ const Messenger = () => {
             receiverId: currentfriend._id,
             message: newMessage ? newMessage : '❤'
         }
-        dispatch(messageSend(data));
 
+        socket.current.emit('sendMessage',{
+            senderId: myInfo.id,
+            senderName: myInfo.username,
+            receiverId: currentfriend._id,
+            time: new Date(),
+            message : {
+                 text : newMessage ? newMessage : '❤',
+                 image : ''
+            }
+       })
+
+        dispatch(messageSend(data));
+        setNewMessage('')
     }
 
     const dispatch = useDispatch();
