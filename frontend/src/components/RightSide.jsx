@@ -6,7 +6,7 @@ import FriendInfo from './FriendInfo';
 
 const RightSide = (props) => {
 
-    const { currentfriend, inputHandle, newMessage, sendMessage, message, scrollRef, emojiSend, ImageSend } = props;
+    const { currentfriend, inputHandle, newMessage, sendMessage, message, scrollRef, emojiSend, ImageSend, activeUser } = props;
 
     return (
         <div className='col-9'>
@@ -19,7 +19,9 @@ const RightSide = (props) => {
                                 <div className='image-name'>
                                     <div className='image'>
                                         <img src={`./images/${currentfriend.image}`} alt='' />
-
+                                        {
+                                            activeUser && activeUser.length > 0 && activeUser.some(u => u.userId === currentfriend._id) ? <div className='active-icon'></div> : ''
+                                        }
                                     </div>
                                     <div className='name'>
                                         <h3> {currentfriend.username} </h3>
@@ -44,19 +46,19 @@ const RightSide = (props) => {
                             <Message
                                 message={message}
                                 currentfriend={currentfriend}
-                                scrollRef = {scrollRef}
+                                scrollRef={scrollRef}
                             />
                             <MessageSend
                                 inputHandle={inputHandle}
                                 newMessage={newMessage}
                                 sendMessage={sendMessage}
                                 emojiSend={emojiSend}
-                                ImageSend = {ImageSend}
+                                ImageSend={ImageSend}
                             />
                         </div>
                     </div>
                     <div className='col-4'>
-                        <FriendInfo currentfriend={currentfriend} />
+                        <FriendInfo currentfriend={currentfriend} activeUser={activeUser} />
                     </div>
                 </div>
             </div>
