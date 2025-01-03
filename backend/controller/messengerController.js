@@ -3,12 +3,59 @@ const fs = require('fs');
 const User = require('../models/authModel');
 const Message = require('../models/messageModel');
 
+const getLastMessage = async (myId, fdId) => {
+    const msg = await Message.findOne({
+        $or: [{
+            $and: [{
+                senderId: {
+                    $eq: myId
+                }
+            }, {
+                receiverId: {
+                    $eq: fdId
+                }
+            }]
+        }, {
+            $and: [{
+                senderId: {
+                    $eq: fdId
+                }
+            }, {
+                receiverId: {
+                    $eq: myId
+                }
+            }]
+        }]
+    }).sort({
+        updatedAt: -1
+    });
+    return msg;
+}
+
 module.exports.getFriends = async (req, res) => {
+    const myId = req.myId;
+    let friends_with_last_msg = [];
     try {
-        const myId = req.myId;
-        const friends = await User.find({});
-        const filteredFriends = friends.filter(d => d.id !== myId);
-        res.status(200).json({ success: true, friends: filteredFriends })
+        // const friends = await User.find({});
+        // const filteredFriends = friends.filter(d => d.id !== myId);
+        // res.status(200).json({ success: true, friends: filteredFriends })
+
+        const friends = await User.find({
+            _id: {
+                $ne: myId
+            }
+        });
+
+        for (let i = 0; i < friends.length; i++ ){
+            let lastMessage = await getLastMessage(myId,friends[i].id);
+            friends_with_last_msg = [...friends_with_last_msg, {
+                 fndInfo : friends[i],
+                 msgInfo : lastMessage
+            }]
+           
+       }
+        console.log(friends_with_last_msg);
+        res.status(200).json({ success: true, friends: friends_with_last_msg })
     } catch (error) {
         res.status(500).json({
             error: {
@@ -20,7 +67,7 @@ module.exports.getFriends = async (req, res) => {
 
 async function saveMessage(message) {
     const messageSaved = await message.save();
-    console.log('Stored message', message);
+    console.log('Stored message id', messageSaved._id);
     return messageSaved;
 }
 
@@ -59,9 +106,31 @@ module.exports.getMessages = async (req, res) => {
     const fdId = req.params.id;
 
     try {
-        let allMessages = await Message.find({})
+        let allMessages = await Message.find({
+            $or: [{
+                $and: [{
+                    senderId: {
+                        $eq: myId
+                    }
+                }, {
+                    receiverId: {
+                        $eq: fdId
+                    }
+                }]
+            }, {
+                $and: [{
+                    senderId: {
+                        $eq: fdId
+                    }
+                }, {
+                    receiverId: {
+                        $eq: myId
+                    }
+                }]
+            }]
+        })
 
-        allMessages = allMessages.filter(m => m.senderId === myId && m.receiverId === fdId || m.receiverId === myId && m.senderId === fdId);
+        // allMessages = allMessages.filter(m => m.senderId === myId && m.receiverId === fdId || m.receiverId === myId && m.senderId === fdId);
 
         res.status(200).json({
             success: true,
@@ -112,7 +181,7 @@ module.exports.ImageMessageSend = (req, res) => {
                             image: String(files.image.originalFilename)
                         }
                     });
-            
+
                     const savedMessage = await saveMessage(messageToSave);
                     res.status(201).json({
                         success: true,

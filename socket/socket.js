@@ -25,7 +25,7 @@ const findFriend = (id) => {
 io.on('connection', (socket) => {
     console.log('Socket is connecting...')
     socket.on('addUser', (userId, userInfo) => {
-        console.log(socket.id, userId, userInfo)
+        // console.log(socket.id, userId, userInfo)
         addUser(userId, socket.id, userInfo);
         io.emit('getUser', users);
     });
@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
                    
              })
         }
-        console.log('typing user', user)
+        // console.log('typing user', user)
    })
 
     socket.on('disconnect', () => {
