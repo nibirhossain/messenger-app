@@ -1,5 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
+import moment from 'moment';
+import { FaRegCheckCircle } from 'react-icons/fa';
 
 const Message = ({ message, currentfriend, scrollRef, typingMessage }) => {
     const { myInfo } = useSelector(state => state.auth);
@@ -7,15 +9,18 @@ const Message = ({ message, currentfriend, scrollRef, typingMessage }) => {
         <>
             <div className='message-show'>
                 {
-                    message && message.length > 0 ? message.map(m =>
+                    message && message.length > 0 ? message.map((m, index) =>
                         m.senderId === myInfo.id ? <div ref={scrollRef} className='my-message'>
                             <div className='image-message'>
                                 <div className='my-text'>
                                     <p className='message-text'> {m.message.text === '' ? <img src={`./images/${m.message.image}`} /> : m.message.text} </p>
+                                    {
+                                        index === message.length - 1 && m.senderId === myInfo.id ? m.status === 'seen' ? <img className='img' src={`./images/${currentfriend.image}`} alt='' /> : m.status === 'delivared' ? <span> <FaRegCheckCircle /> </span> : <span> <FaRegCheckCircle /> </span> : ''
+                                    }
                                 </div>
                             </div>
                             <div className='time'>
-                                2 Jan 2022
+                                {moment(m.createdAt).startOf('mini').fromNow()}
                             </div>
                         </div> : <div ref={scrollRef} className='fd-message'>
                             <div className='image-message-time'>
@@ -25,12 +30,16 @@ const Message = ({ message, currentfriend, scrollRef, typingMessage }) => {
                                         <p className='message-text'> {m.message.text === '' ? <img src={`./images/${m.message.image}`} /> : m.message.text}  </p>
                                     </div>
                                     <div className='time'>
-                                        3 Jan 2022
+                                        {moment(m.createdAt).startOf('mini').fromNow()}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    ) : ''
+                    ) : <div className='friend_connect'>
+                        <img src={`./images/${currentfriend.image}`} alt='' />
+                        <h3>{currentfriend.username} Connects You </h3>
+                        <span> {moment(currentfriend.createdAt).startOf('mini').fromNow()} </span>
+                    </div>
                 }
             </div>
             {

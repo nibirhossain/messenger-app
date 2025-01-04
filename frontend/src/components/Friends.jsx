@@ -5,24 +5,28 @@ import { FaRegCheckCircle } from "react-icons/fa";
 const Friends = (props) => {
      const { fndInfo, msgInfo } = props.friend;
      const myId = props.myId;
+     const { activeUser } = props;
+
      return (
           <div className='friend'>
                <div className='friend-image'>
                     <div className='image'>
                          <img src={`./images/${fndInfo.image}`} alt='' />
+                         {
+                              activeUser && activeUser.length > 0 && activeUser.some(u => u.userId === fndInfo._id) ? <div className='active_icon'></div> : ''
+                         }
                     </div>
                </div>
 
                <div className='friend-name-seen'>
                     <div className='friend-name'>
-                         <h4> {fndInfo.username} </h4>
+                         <h4 className={msgInfo?.senderId !== myId && msgInfo?.status !== undefined && msgInfo.status !== 'seen' ? 'unseen_message ' : ''} >{fndInfo.username}</h4>
                          <div className='msg-time'>
                               {
-                                   msgInfo && msgInfo.senderId === myId ? <span>You </span> : <span> {fndInfo.username + ' '} </span>
+                                   msgInfo && msgInfo.senderId === myId ? <span>You </span> : <span className={msgInfo?.senderId !== myId && msgInfo?.status !== undefined && msgInfo.status !== 'seen' ? 'unseen_message ' : ''}> {fndInfo.username + ' '} </span>
                               }
                               {
-                                   msgInfo && msgInfo.message.text ? <span>{msgInfo.message.text.slice(0, 10)}</span> : msgInfo && msgInfo.message.image ? <span>&nbsp;sent an image&nbsp;</span> : <span>&nbsp;connect You</span>
-                              }
+                                   msgInfo && msgInfo.message.text ? <span className={msgInfo?.senderId !== myId && msgInfo?.status !== undefined && msgInfo.status !== 'seen' ? 'unseen_message ' : ''}>{msgInfo.message.text.slice(0, 10)}</span> : msgInfo && msgInfo.message.image ? <span>Send A image </span> : <span>Connect You </span>}
                               <span>{msgInfo ? ' ' + moment(msgInfo.createdAt).startOf('mini').fromNow() : ' ' + moment(fndInfo.createdAt).startOf('mini').fromNow()}</span>
                          </div>
                     </div>
