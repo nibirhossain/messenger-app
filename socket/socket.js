@@ -32,33 +32,45 @@ io.on('connection', (socket) => {
 
     socket.on('sendMessage', (data) => {
         const user = findFriend(data.receiverId);
-        console.log(user);
-        if(user !== undefined){
-            socket.to(user.socketId).emit('getMessage',{
-                 senderId : data.senderId,
-                 senderName :  data.senderName,
-                 receiverId :  data.receiverId,
-                 createAt : data.time,
-                 message : {
-                      text : data.message.text,
-                      image : data.message.image
-                 }
-            })
-       }
+        // console.log(user);
+        if (user !== undefined) {
+            socket.to(user.socketId).emit('getMessage', data)
+        }
     });
 
-    socket.on('typingMessage',(data)=>{
+    socket.on('typingMessage', (data) => {
         const user = findFriend(data.receiverId);
-        if(user !== undefined){
-             socket.to(user.socketId).emit('typingMessageGet',{
-                  senderId : data.senderId,                   
-                  receiverId :  data.receiverId,
-                  msg : data.msg                    
-                   
-             })
+        if (user !== undefined) {
+            socket.to(user.socketId).emit('typingMessageGet', {
+                senderId: data.senderId,
+                receiverId: data.receiverId,
+                msg: data.msg
+
+            })
         }
         // console.log('typing user', user)
-   })
+    })
+
+    socket.on('messageSeen', msg => {
+        const user = findFriend(msg.senderId);
+        if (user !== undefined) {
+            socket.to(user.socketId).emit('msgSeenResponse', msg)
+        }
+    })
+
+    socket.on('deliveredMessage', msg => {
+        const user = findFriend(msg.senderId);
+        if (user !== undefined) {
+            socket.to(user.socketId).emit('msgDeliveredResponse', msg)
+        }
+    })
+
+    socket.on('seen', data => {
+        const user = findFriend(data.senderId);
+        if (user !== undefined) {
+            socket.to(user.socketId).emit('seenSuccess', data)
+        }
+    })
 
     socket.on('disconnect', () => {
         console.log('user is disconnect... ');

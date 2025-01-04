@@ -46,14 +46,14 @@ module.exports.getFriends = async (req, res) => {
             }
         });
 
-        for (let i = 0; i < friends.length; i++ ){
-            let lastMessage = await getLastMessage(myId,friends[i].id);
+        for (let i = 0; i < friends.length; i++) {
+            let lastMessage = await getLastMessage(myId, friends[i].id);
             friends_with_last_msg = [...friends_with_last_msg, {
-                 fndInfo : friends[i],
-                 msgInfo : lastMessage
+                fndInfo: friends[i],
+                msgInfo: lastMessage
             }]
-           
-       }
+
+        }
         console.log(friends_with_last_msg);
         res.status(200).json({ success: true, friends: friends_with_last_msg })
     } catch (error) {
@@ -197,4 +197,41 @@ module.exports.ImageMessageSend = (req, res) => {
             })
         }
     })
+}
+
+module.exports.messageSeen = async (req, res) => {
+    const messageId = req.body._id;
+    console.log('Message seen id', messageId)
+    await Message.findByIdAndUpdate(messageId, {
+        status: 'seen'
+    })
+        .then(() => {
+            res.status(200).json({
+                success: true
+            })
+        }).catch(() => {
+            res.status(500).json({
+                error: {
+                    errorMessage: 'Internal Server Error'
+                }
+            })
+        })
+}
+module.exports.deliveredMessage = async (req, res) => {
+    const messageId = req.body._id;
+    console.log('Message delivered id', messageId)
+    await Message.findByIdAndUpdate(messageId, {
+        status: 'delivered'
+    })
+        .then(() => {
+            res.status(200).json({
+                success: true
+            })
+        }).catch(() => {
+            res.status(500).json({
+                error: {
+                    errorMessage: 'Internal Server Error'
+                }
+            })
+        })
 }
