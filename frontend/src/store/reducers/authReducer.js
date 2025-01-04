@@ -1,18 +1,18 @@
-import { ERROR_CLEAR, REGISTRATION_FAIL, REGISTRATION_SUCCESS, SUCCESS_MESSAGE_CLEAR, USER_LOGIN_FAIL, USER_LOGIN_SUCCESS } from "../types/authType";
+import { ERROR_CLEAR, REGISTRATION_FAIL, REGISTRATION_SUCCESS, SUCCESS_MESSAGE_CLEAR, USER_LOGIN_FAIL, USER_LOGIN_SUCCESS, LOGOUT_SUCCESS } from "../types/authType";
 import { jwtDecode } from 'jwt-decode';
 
 const authState = {
-     loading : true,
-     authenticate : false,
-     error : '',
+     loading: true,
+     authenticate: false,
+     error: '',
      successMessage: '',
-     myInfo : ''
+     myInfo: ''
 }
 
-const tokenDecode = (token) =>{
+const tokenDecode = (token) => {
      const tokenDecoded = jwtDecode(token);
-     const expTime = new Date(tokenDecoded.exp*1000);
-     if(new Date() > expTime){
+     const expTime = new Date(tokenDecoded.exp * 1000);
+     if (new Date() > expTime) {
           return null;
      }
      return tokenDecoded;
@@ -20,56 +20,65 @@ const tokenDecode = (token) =>{
 }
 
 const token = localStorage.getItem('authToken');
-if(token){
+if (token) {
      const myInfo = tokenDecode(token);
-     if(myInfo){
+     if (myInfo) {
           authState.myInfo = myInfo;
           authState.authenticate = true;
           authState.loading = false;
      }
 }
-console.log('Token from local storage', token);
+// console.log('Token from local storage', token);
 
 export const authReducer = (state = authState, action) => {
-     const {payload,type} = action;
+     const { payload, type } = action;
 
-     if(type === REGISTRATION_FAIL || type === USER_LOGIN_FAIL){
+     if (type === REGISTRATION_FAIL || type === USER_LOGIN_FAIL) {
           return {
                ...state,
-               error : payload.error,
-               authenticate : false,
-               myInfo : '',
-               loading : true
+               error: payload.error,
+               authenticate: false,
+               myInfo: '',
+               loading: true
           }
      }
 
-     if(type === REGISTRATION_SUCCESS || type === USER_LOGIN_SUCCESS){
+     if (type === REGISTRATION_SUCCESS || type === USER_LOGIN_SUCCESS) {
           const myInfo = tokenDecode(payload.token);
           console.log('My info', myInfo);
-          return{
+          return {
                ...state,
-               myInfo : myInfo,
-               successMessage : payload.successMessage,
-               error : '',
-               authenticate : true,
+               myInfo: myInfo,
+               successMessage: payload.successMessage,
+               error: '',
+               authenticate: true,
                loading: false
           }
      }
 
-     if(type === SUCCESS_MESSAGE_CLEAR){
-        return {
-             ...state,
-             successMessage : ''
-        }
-   }
+     if (type === SUCCESS_MESSAGE_CLEAR) {
+          return {
+               ...state,
+               successMessage: ''
+          }
+     }
 
-   if(type === ERROR_CLEAR){
-        return {
-             ...state,
-             error : ''
-        }
-   }
+     if (type === ERROR_CLEAR) {
+          return {
+               ...state,
+               error: ''
+          }
+     }
 
+     if (type === LOGOUT_SUCCESS) {
+          return {
+               ...state,
+               authenticate: false,
+               myInfo: '',
+               successMessage: 'Logout Successfull',
+
+          }
+     }
 
      return state;
 }

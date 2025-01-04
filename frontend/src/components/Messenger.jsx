@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { FaEllipsisH, FaEdit, FaSistrix } from 'react-icons/fa';
+import { FaEllipsisH, FaEdit, FaSistrix, FaSignOutAlt } from 'react-icons/fa';
 import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
 import RightSide from "./RightSide";
@@ -9,6 +9,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import useSound from 'use-sound';
 import notificationSound from '../audio/notification.mp3';
 import sendingSound from '../audio/sending.mp3';
+import { userLogout } from '../store/actions/authAction';
 import { io } from 'socket.io-client';
 
 const Messenger = () => {
@@ -169,7 +170,7 @@ const Messenger = () => {
     useEffect(() => {
         dispatch(getMessages(currentfriend._id));
         if (friends.length > 0) {
-            
+
         }
     }, [currentfriend?._id]);
 
@@ -233,6 +234,12 @@ const Messenger = () => {
         }
     }
 
+    const [hide, setHide] = useState(true);
+    const logout = () => {
+        dispatch(userLogout());
+        socket.current.emit('logout', myInfo.id);
+    }
+
     return (
         <div className="messenger">
             <Toaster
@@ -258,12 +265,27 @@ const Messenger = () => {
                                 </div>
                             </div>
                             <div className='icons'>
-                                <div className='icon'>
+                                <div onClick={() => setHide(!hide)} className='icon'>
                                     <FaEllipsisH />
                                 </div>
                                 <div className='icon'>
                                     <FaEdit />
                                 </div>
+                                <div className={hide ? 'theme_logout' : 'theme_logout show'}>
+                                    <h3>Dark Mode </h3>
+                                    <div className='on'>
+                                        <label htmlFor='dark'>ON</label>
+                                        <input type="radio" value="dark" name="theme" id="dark" />
+                                    </div>
+                                    <div className='of'>
+                                        <label htmlFor='white'>OFF</label>
+                                        <input type="radio" value="white" name="theme" id="white" />
+                                    </div>
+                                    <div onClick={logout} className='logout'>
+                                        <FaSignOutAlt /> Logout
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                         <div className='friend-search'>
@@ -280,7 +302,7 @@ const Messenger = () => {
                         <div className='friends'>
                             {
                                 friends && friends.length > 0 ? friends.map((fd) => <div onClick={() => setCurrentFriend(fd.fndInfo)} className={currentfriend._id === fd.fndInfo._id ? 'hover-friend active' : 'hover-friend'}>
-                                    <Friends activeUser = {activeUser} myId = {myInfo.id}  friend = {fd} />
+                                    <Friends activeUser={activeUser} myId={myInfo.id} friend={fd} />
                                 </div>) : 'No Friend'
                             }
 
