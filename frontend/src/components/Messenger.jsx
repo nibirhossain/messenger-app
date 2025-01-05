@@ -4,7 +4,7 @@ import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
 import RightSide from "./RightSide";
 import { useDispatch, useSelector } from 'react-redux';
-import { getFriends, messageSend, getMessages, ImageMessageSend, seenMessage, updateMessage } from '../store/actions/messengerAction';
+import { getFriends, messageSend, getMessages, ImageMessageSend, seenMessage, updateMessage, getTheme, themeSet } from '../store/actions/messengerAction';
 import toast, { Toaster } from 'react-hot-toast';
 import useSound from 'use-sound';
 import notificationSound from '../audio/notification.mp3';
@@ -18,7 +18,7 @@ const Messenger = () => {
     const [notificationPlay] = useSound(notificationSound);
     const [sendingPlay] = useSound(sendingSound);
     const { myInfo } = useSelector(state => state.auth);
-    const { friends, message, mesageSendSuccess, message_get_success } = useSelector(state => state.messenger);
+    const { friends, message, mesageSendSuccess, message_get_success, themeMood } = useSelector(state => state.messenger);
     const [currentfriend, setCurrentFriend] = useState('');
     const [newMessage, setNewMessage] = useState('');
     const [activeUser, setActiveUser] = useState([]);
@@ -240,8 +240,12 @@ const Messenger = () => {
         socket.current.emit('logout', myInfo.id);
     }
 
+    useEffect(() => {
+        dispatch(getTheme());
+    }, []);
+
     return (
-        <div className="messenger">
+        <div className={themeMood === 'dark' ? 'messenger theme' : 'messenger' }>
             <Toaster
                 position={'top-right'}
                 reverseOrder={false}
@@ -275,11 +279,11 @@ const Messenger = () => {
                                     <h3>Dark Mode </h3>
                                     <div className='on'>
                                         <label htmlFor='dark'>ON</label>
-                                        <input type="radio" value="dark" name="theme" id="dark" />
+                                        <input onChange={(e) => dispatch(themeSet(e.target.value)) } type="radio" value="dark" name="theme" id="dark" />
                                     </div>
                                     <div className='of'>
                                         <label htmlFor='white'>OFF</label>
-                                        <input type="radio" value="white" name="theme" id="white" />
+                                        <input onChange={(e) => dispatch(themeSet(e.target.value)) } type="radio" value="white" name="theme" id="white" />
                                     </div>
                                     <div onClick={logout} className='logout'>
                                         <FaSignOutAlt /> Logout

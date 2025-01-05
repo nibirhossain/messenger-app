@@ -1,4 +1,4 @@
-import { MESSAGE_SEND_SUCCESS, MESSAGE_SEND_SUCCESS_CLEAR, SOCKET_MESSAGE, UPDATE_FRIEND_MESSAGE, SEEN_MESSAGE, DELIVERED_MESSAGE, UPDATE, MESSAGE_GET_SUCCESS_CLEAR, SEEN_ALL } from "../types/messengerType";
+import { MESSAGE_SEND_SUCCESS, MESSAGE_SEND_SUCCESS_CLEAR, SOCKET_MESSAGE, UPDATE_FRIEND_MESSAGE, SEEN_MESSAGE, DELIVERED_MESSAGE, UPDATE, MESSAGE_GET_SUCCESS_CLEAR, SEEN_ALL, THEME_GET_SUCCESS, THEME_SET_SUCCESS } from "../types/messengerType";
 import { MESSAGE_GET_SUCCESS } from "../types/messengerType";
 import { FRIEND_GET_SUCCESS } from "../types/messengerType";
 
@@ -6,11 +6,19 @@ const messengerState = {
     friends: [],
     message: [],
     mesageSendSuccess: false,
-    message_get_success: false
+    message_get_success: false,
+    themeMood : ''
 }
 
 export const messengerReducer = (state = messengerState, action) => {
     const { type, payload } = action;
+    if(type === THEME_GET_SUCCESS || type === THEME_SET_SUCCESS){
+        return {
+             ...state,
+             themeMood : payload.theme
+        }
+   }
+   
     if (type === FRIEND_GET_SUCCESS) {
         return {
             ...state,
