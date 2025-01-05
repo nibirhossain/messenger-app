@@ -47,7 +47,7 @@ const RightSide = (props) => {
                                 message={message}
                                 currentfriend={currentfriend}
                                 scrollRef={scrollRef}
-                                typingMessage = {typingMessage}
+                                typingMessage={typingMessage}
                             />
                             <MessageSend
                                 inputHandle={inputHandle}
@@ -59,7 +59,7 @@ const RightSide = (props) => {
                         </div>
                     </div>
                     <div className='col-4'>
-                        <FriendInfo currentfriend={currentfriend} activeUser={activeUser} />
+                        <FriendInfo message={message} currentfriend={currentfriend} activeUser={activeUser} />
                     </div>
                 </div>
             </div>

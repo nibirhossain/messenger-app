@@ -244,8 +244,21 @@ const Messenger = () => {
         dispatch(getTheme());
     }, []);
 
+    const search = (e) => {
+        const getFriendClass = document.getElementsByClassName('hover-friend');
+        const frienNameClass = document.getElementsByClassName('Fd_name');
+        for (var i = 0; i < getFriendClass.length, i < frienNameClass.length; i++) {
+            let text = frienNameClass[i].innerText.toLowerCase();
+            if (text.indexOf(e.target.value.toLowerCase()) > -1) {
+                getFriendClass[i].style.display = '';
+            } else {
+                getFriendClass[i].style.display = 'none';
+            }
+        }
+    }
+
     return (
-        <div className={themeMood === 'dark' ? 'messenger theme' : 'messenger' }>
+        <div className={themeMood === 'dark' ? 'messenger theme' : 'messenger'}>
             <Toaster
                 position={'top-right'}
                 reverseOrder={false}
@@ -279,11 +292,11 @@ const Messenger = () => {
                                     <h3>Dark Mode </h3>
                                     <div className='on'>
                                         <label htmlFor='dark'>ON</label>
-                                        <input onChange={(e) => dispatch(themeSet(e.target.value)) } type="radio" value="dark" name="theme" id="dark" />
+                                        <input onChange={(e) => dispatch(themeSet(e.target.value))} type="radio" value="dark" name="theme" id="dark" />
                                     </div>
                                     <div className='of'>
                                         <label htmlFor='white'>OFF</label>
-                                        <input onChange={(e) => dispatch(themeSet(e.target.value)) } type="radio" value="white" name="theme" id="white" />
+                                        <input onChange={(e) => dispatch(themeSet(e.target.value))} type="radio" value="white" name="theme" id="white" />
                                     </div>
                                     <div onClick={logout} className='logout'>
                                         <FaSignOutAlt /> Logout
@@ -295,7 +308,7 @@ const Messenger = () => {
                         <div className='friend-search'>
                             <div className='search'>
                                 <button> <FaSistrix /> </button>
-                                <input type="text" placeholder='Search' className='form-control' />
+                                <input onChange={search} type="text" placeholder='Search' className='form-control' />
                             </div>
                         </div>
                         {/**<div className='active-friends'>
